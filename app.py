@@ -86,7 +86,6 @@ def gather_edit_data(user_id):
     db.session.add(current_user)
     db.session.commit()
 
-    # not sure why this is not just editing the previous entry... it instead just makes a new row? It works when done in Ipython
     return redirect('/users')
 
 
@@ -101,32 +100,21 @@ def delete_user(user_id):
     return redirect('/users')
 
 
+# To start the application with some set users:
+User.query.delete()
+db.session.commit()
 
 
+John = User(first_name='John', last_name='Jamieson')
+Kate = User(first_name='Kate', last_name='Ortega')
+Joel = User(first_name='Joel', last_name='Miller')
 
+db.session.add(John)
+db.session.add(Kate)
+db.session.add(Joel)
 
+db.session.commit()
 
-
-
-
-
-
-
-
-
-
-
-
-
-# John = User(first_name='John', last_name='Jamieson', image_url='atest.png')
-# Kate = User(first_name='Kate', last_name='Ortega', image_url='atest1.png')
-# Joel = User(first_name='Joel', last_name='Miller', image_url='atest2.png')
-
-# db.session.add(John)
-# db.session.add(Kate)
-# db.session.add(Joel)
-
-# db.session.commit()
 
 
 
