@@ -2,7 +2,7 @@
 
 from flask import Flask, request, render_template, session, jsonify, redirect
 from flask_debugtoolbar import DebugToolbarExtension
-from models import db, connect_db, User
+from models import db, connect_db, User, Post
 
 app = Flask(__name__)
 app.app_context().push()
@@ -38,8 +38,8 @@ def user_page():
 def load_details(user_id):
     '''this shows the profile's details'''
     user = User.query.get_or_404(user_id)
-
-    return render_template('detail.html', user=user)
+    posts = Post.query.filter_by(user_id=user_id).all()
+    return render_template('detail.html', user=user, posts=posts)
 
 
 
@@ -100,20 +100,72 @@ def delete_user(user_id):
     return redirect('/users')
 
 
-# To start the application with some set users:
-User.query.delete()
-db.session.commit()
+# Part TWO routes
 
 
-John = User(first_name='John', last_name='Jamieson')
-Kate = User(first_name='Kate', last_name='Ortega')
-Joel = User(first_name='Joel', last_name='Miller')
+@app.route('/users/<int:user_id>/posts/new', methods=['GET'])
+def present_new_post_form(user_id):
+    """This will present the form for a user to add a new post."""
+    current_user = User.query.get_or_404(user_id)
 
-db.session.add(John)
-db.session.add(Kate)
-db.session.add(Joel)
+    return render_template('new_post.html', user=current_user)
 
-db.session.commit()
+
+@app.route('/users/<int:user_id>/posts/new', methods=['POST'])
+def add_new_post(user_id):
+    """This will collect the form data nad make a new post."""
+    new_post_title= request.form['title']
+    new_post_content= request.form['content']
+
+    new_post = Post(title=new_post_title, content=new_post_content, user_id=user_id)
+    db.session.add(new_post)
+    db.session.commit()
+
+    return redirect(f"/users/{user_id}")
+
+
+@app.route('/posts/<int:post_id>')
+def get_post_content(post_id):
+    """This will get the post and its corresponding content"""
+    current_post = Post.query.get_or_404(post_id)
+    return render_template('posts.html', post=current_post)
+
+
+
+@app.route('/posts/<int:post_id>/edit', methods=['GET'])
+def show_edit_form(post_id):
+    """This will prompt the user with a form to edit their post."""
+    current_post = Post.query.get_or_404(post_id)
+
+    return render_template('edit_post.html', post=current_post)
+
+
+@app.route('/posts/<int:post_id>/edit', methods=['POST'])
+def make_post_edit(post_id):
+    """This will make the edits to the post from the form data."""
+    current_post = Post.query.get_or_404(post_id)
+
+    new_post_title= request.form['title']
+    new_post_content= request.form['content']
+
+    current_post.title= str(new_post_title)
+    current_post.content= str(new_post_content)
+
+    db.session.add(current_post)
+    db.session.commit()
+
+    return redirect(f'/posts/{post_id}')
+
+
+@app.route('/posts/<int:post_id>/delete')
+def delete_post(post_id):
+    """This will delete the currently selected post."""
+    current_post = Post.query.get_or_404(post_id)
+    user_id = current_post.user.id
+    db.session.delete(current_post)
+    db.session.commit()
+
+    return redirect(f'/users/{user_id}')
 
 
 
