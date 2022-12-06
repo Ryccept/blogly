@@ -1,0 +1,15 @@
+{%extends 'base.html'%} {%block title%}Tag{%endblock%} {%block content %}
+
+<h1>Current Tags:</h1>
+{%if tags %}
+<ul>
+  {%for tag in tags%}
+  <li><a href="/tags/{{tag.id}}">{{tag.name}}</a></li>
+  {%endfor%}
+</ul>
+{%endif%}
+<a href="/tags/new"><button>Add Tag</button></a>
+<br />
+<br />
+<a href="/"><button>Home</button></a>
+{%endblock%}
